@@ -18,6 +18,9 @@
       <UniqueIdentifier>{8b577c25-b3ad-4216-923c-848b442e9ecc}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Downloader">
+      <UniqueIdentifier>{7c9fd6ef-8ef2-4f5f-a761-44eec7048c29}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WebInstall.cpp">
@@ -27,9 +30,6 @@
       <Filter>Common Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\common\CmdLine.cpp">
-      <Filter>Common Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ConEmuC\Downloader.cpp">
       <Filter>Common Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\ConEmu\DpiAware.cpp">
@@ -64,6 +64,9 @@
     </ClCompile>
     <ClCompile Include="..\ConEmu\DynDialog.cpp">
       <Filter>Common Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ConEmuC\Downloader.cpp">
+      <Filter>Downloader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -109,12 +112,6 @@
     <ClInclude Include="..\ConEmu\DpiAware.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\ConEmuC\Downloader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ConEmuC\DownloaderApi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\common\MSectionSimple.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -123,6 +120,12 @@
     </ClInclude>
     <ClInclude Include="..\ConEmu\DynDialog.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ConEmuC\DownloaderApi.h">
+      <Filter>Downloader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ConEmuC\Downloader.h">
+      <Filter>Downloader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

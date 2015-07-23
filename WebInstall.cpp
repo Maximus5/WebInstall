@@ -31,10 +31,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../common/common.hpp"
 #include "../common/WObjects.h"
-#include "../common/StartupEnvEx.h"
+#include "../common/WThreads.h"
 #include "../ConEmu/DpiAware.h"
 #include "../ConEmu/DynDialog.h"
 #include "../ConEmuC/Downloader.h"
+
+#include "../common/StartupEnvEx.h"
 
 #include <tchar.h>
 #include <Commctrl.h>
@@ -53,6 +55,8 @@ CDpiForDialog* gp_DpiAware = NULL;
 HWND gh_Dlg = NULL;
 HMONITOR gh_StartMon = NULL;
 STARTUPINFO g_SI = { sizeof(g_SI) };
+DWORD gnWorkerThread = 0;
+HANDLE ghWorkerThread = NULL;
 
 enum InstallSteps {
 	st_DownloadIni = 0,
@@ -78,16 +82,52 @@ LPCWSTR VersionLocations[] = {
 };
 wchar_t gs_ProcessingPath[MAX_PATH] = L"";
 
-void UpdateShowStep()
-{
-	SetDlgItemText(gh_Dlg, tOperation, InstallStepsNames[g_Step]);
-	SetDlgItemText(gh_Dlg, tURL, gs_ProcessingPath);
-}
-
-
-void LogString(LPCWSTR asInfo, bool abWriteTime /*= true*/, bool abWriteLine /*= true*/)
+void LogString(LPCWSTR asInfo, bool abWriteTime = true, bool abWriteLine = true)
 {
 	//if (gpLog) gpLog->LogString(asInfo, abWriteTime, abWriteLine);
+	int iLine = SendDlgItemMessage(gh_Dlg, IDC_PROGRESS, LB_ADDSTRING, 0, (LPARAM)asInfo);
+	if (iLine >= 0)
+		SendDlgItemMessage(gh_Dlg, IDC_PROGRESS, LB_SETCURSEL, iLine, 0);
+}
+
+extern FDownloadCallback gpfn_DownloadCallback;
+
+void WINAPI InstallerDownloadCallback(const CEDownloadInfo* pError)
+{
+	wchar_t *pszInfo = NULL, *pszLine, *pszEnd;
+
+	switch (pError->lParam)
+	{
+	case (dc_ErrCallback+1):
+	case (dc_ProgressCallback+1):
+	case (dc_LogCallback+1):
+		pszInfo = pError->GetFormatted(false);
+		if (!pszInfo)
+			break;
+		pszLine = pszInfo;
+		while (pszLine && *pszLine)
+		{
+			pszEnd = wcspbrk(pszLine, L"\r\n");
+			if (pszEnd)
+				*pszEnd = 0;
+			LogString(pszLine);
+			if (!pszEnd)
+				break;
+			pszLine = pszEnd+1;
+			while ((*pszLine == L'\r') || (*pszLine == L'\n'))
+				pszLine++;
+		}
+		break;
+	}
+
+	if (pszInfo)
+		free(pszInfo);
+}
+
+void UpdateShowStep()
+{
+	LogString(InstallStepsNames[g_Step]);
+	LogString(gs_ProcessingPath);
 }
 
 int MsgBox(LPCTSTR lpText, UINT uType, LPCTSTR lpCaption = NULL, HWND ahParent = NULL, bool abModal = true)
@@ -144,12 +184,23 @@ void EditIconHint_ResChanged(HWND) {};
 
 int ProcessCommandLine(LPCWSTR asCommandLine)
 {
+	lstrcpyn(gs_ProcessingPath, VersionLocations[0], countof(gs_ProcessingPath));
+	gpfn_DownloadCallback = InstallerDownloadCallback;
 	return 0;
 }
 
 BOOL MoveWindowRect(HWND hWnd, const RECT& rcWnd, BOOL bRepaint = FALSE)
 {
 	return MoveWindow(hWnd, rcWnd.left, rcWnd.top, rcWnd.right - rcWnd.left, rcWnd.bottom - rcWnd.top, bRepaint);
+}
+
+DWORD WINAPI WorkerThread(LPVOID lpParameter)
+{
+	CEStr lsCmd = lstrmerge(gs_ProcessingPath, L" \"%TEMP%\\version.ini\"");
+	int iDownloadRc = DoDownload(lsCmd);
+
+	SetDlgItemText(gh_Dlg, IDCANCEL, L"Close");
+	return 0;
 }
 
 INT_PTR WINAPI downloadDlgProc(HWND hDlg, UINT messg, WPARAM wParam, LPARAM lParam)
@@ -178,6 +229,8 @@ INT_PTR WINAPI downloadDlgProc(HWND hDlg, UINT messg, WPARAM wParam, LPARAM lPar
 
 		SetFocus(GetDlgItem(hDlg, IDCANCEL));
 
+		ghWorkerThread = apiCreateThread(WorkerThread, NULL, &gnWorkerThread, "Installer background thread");
+
 		return FALSE;
 	}
 
@@ -198,6 +251,8 @@ INT_PTR WINAPI downloadDlgProc(HWND hDlg, UINT messg, WPARAM wParam, LPARAM lPar
 		break;
 
 	case WM_CLOSE:
+		if (ghWorkerThread && (WaitForSingleObject(ghWorkerThread, 0) == WAIT_OBJECT_0))
+			apiTerminateThread(ghWorkerThread, 100);
 		if (gp_DpiAware)
 			gp_DpiAware->Detach();
 		EndDialog(hDlg, IDOK);
