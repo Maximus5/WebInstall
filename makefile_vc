@@ -2,7 +2,6 @@
 .SILENT:
 
 NAME=ConEmu
-DIRNAME=$(NAME)
 RELEASEDIR=..\..\Release
 NEEDDEFLIB = 1
 
@@ -16,23 +15,16 @@ OUTNAME=ConEmuIA64
 OUTNAME=ConEmu
 !endif
 
-LINK=link.exe
 ULINK=ulink.exe
-M4=tools\m4 -P -DFARBIT=$(DIRBIT)
-GAWK=tools\gawk
-
-#DEF_FILE = ".\$(NAME).def"
 
 RES_FILE = "$(INTDIR)\$(NAME).res"
-
-#PCH_FILE = "$(INTDIR)\headers.pch"
 
 LINK_OBJS = \
 $(INTDIR)\AboutDlg.obj \
 $(INTDIR)\Attach.obj \
 $(INTDIR)\Background.obj \
 $(INTDIR)\BaseDragDrops.obj \
-$(INTDIR)\CmdArg.obj \
+$(INTDIR)\CEStr.obj \
 $(INTDIR)\CmdHistory.obj \
 $(INTDIR)\CmdLine.obj \
 $(INTDIR)\Common.obj \
@@ -143,9 +135,6 @@ DEFINES=\
 	/D_CRT_NON_CONFORMING_SWPRINTFS \
 	/DUSE_SEH
 
-MAP = $(OUTDIR)\$(OUTNAME).Gui.map
-PDB_NAME = $(OUTNAME).pdb
-PDB = $(OUTDIR)\$(PDB_NAME)
 
 # common
 CPPFLAGS=/nologo $(MP) /W3 /wd4995 $(FARSYSLOG) /EHsc $(DEFINES) /GS- /GR- /Gy /GF /Fo"$(INTDIR)\\" /Fd"$(PDB)" /J /c /FAcs /Fa"$(CODDIR)\\"
@@ -194,17 +183,6 @@ RFLAGS=$(RFLAGS)
 !endif
 
 ALL: AllDirs build clean
-#ALL: AllDirs lng depfile
-#	$(MAKE) /nologo /f makefile_vc build USEDEPS=1
-
-#.PHONY: lng
-#lng: farlang.templ
-#	echo generating language files
-#	tools\lng.generator.exe -nc -i lang.ini -ol "$(OUTDIR)" farlang.templ
-
-#.PHONY: depfile
-#depfile:
-#	$(GAWK) -f .\scripts\mkdep.awk mkdep.list > $(DEPFILE)
 
 .PHONY: build
 build: "$(OUTDIR)\$(OUTNAME).exe"
@@ -218,7 +196,7 @@ AllDirs:
 "$(OUTDIR)\$(OUTNAME).exe": $(DEF_FILE) $(LINK_OBJS) $(RES_FILE) conemu.gcc.manifest
 	echo linking $@
 !ifndef LINK_ULINK
-	$(LINK) @<<
+	$(LNK) @<<
 	$(LINKFLAGS) $(LINK_OBJS) $(RES_FILE) $(LINK_LIBS)
 <<
 !else
@@ -274,14 +252,6 @@ $(RES_FILE): ConEmu.rc Version.h
 
 MSG=echo generating $@
 
-#Far.exe.manifest: $@.m4 farversion.m4 tools.m4 vbuild.m4
-#	$(MSG)
-#	$(M4) $@.m4 > $@
-
-#ConEmuC.rc: $@.m4 farversion.m4 tools.m4 vbuild.m4 Far.exe.manifest res.hpp
-#	$(MSG)
-#	$(M4) $@.m4 > $@
-
 
 ################
 #LINK_OBJS begin
@@ -294,13 +264,13 @@ $(INTDIR)\Background.obj: Background.cpp Background.h
 
 $(INTDIR)\BaseDragDrops.obj: BaseDragDrops.cpp BaseDragDrops.h DragDrop.h DragDropData.h
 
-$(INTDIR)\CmdArg.obj: ../common/CmdArg.cpp ../common/CmdArg.h ../common/WUser.h
+$(INTDIR)\CEStr.obj: ../common/CEStr.cpp ../common/CEStr.h ../common/WUser.h
 
 $(INTDIR)\CmdHistory.obj: CmdHistory.cpp CmdHistory.h
 
 $(INTDIR)\CmdLine.obj: ../common/CmdLine.cpp ../common/CmdLine.h
 
-$(INTDIR)\Common.obj: ../common/Common.cpp ../common/Common.hpp
+$(INTDIR)\Common.obj: ../common/Common.cpp ../common/Common.h
 
 $(INTDIR)\ConEmu.obj: ConEmu.cpp Version.h GuiServer.h GestureEngine.h ../common/PipeServer.h
 
@@ -408,11 +378,11 @@ $(INTDIR)\RConFiles.obj: RConFiles.cpp RConFiles.h
 
 $(INTDIR)\RConStartArgs.obj: ../common/RConStartArgs.cpp ../common/RConStartArgs.h
 
-$(INTDIR)\RealBuffer.obj: RealBuffer.cpp RealBuffer.h RealConsole.h  ../common/Common.hpp
+$(INTDIR)\RealBuffer.obj: RealBuffer.cpp RealBuffer.h RealConsole.h  ../common/Common.h
 
-$(INTDIR)\RealConsole.obj: RealConsole.cpp RealConsole.h RealServer.h ../common/RConStartArgs.h ../common/Common.hpp ../common/PipeServer.h
+$(INTDIR)\RealConsole.obj: RealConsole.cpp RealConsole.h RealServer.h ../common/RConStartArgs.h ../common/Common.h ../common/PipeServer.h
 
-$(INTDIR)\RealServer.obj: RealServer.cpp RealConsole.h RealServer.h ../common/Common.hpp ../common/PipeServer.h
+$(INTDIR)\RealServer.obj: RealServer.cpp RealConsole.h RealServer.h ../common/Common.h ../common/PipeServer.h
 
 $(INTDIR)\Recreate.obj: Recreate.cpp Recreate.h
 

@@ -26,9 +26,6 @@
     <ClCompile Include="WebInstall.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\CmdArg.cpp">
-      <Filter>Common Sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\common\CmdLine.cpp">
       <Filter>Common Sources</Filter>
     </ClCompile>
@@ -68,12 +65,18 @@
     <ClCompile Include="..\ConEmuC\Downloader.cpp">
       <Filter>Downloader</Filter>
     </ClCompile>
+    <ClCompile Include="..\common\CEStr.cpp">
+      <Filter>Common Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\MStrDup.cpp">
+      <Filter>Common Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="WebDummy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\common\CmdArg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\common\CmdLine.h">
@@ -126,6 +129,15 @@
     </ClInclude>
     <ClInclude Include="..\ConEmuC\Downloader.h">
       <Filter>Downloader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\CEStr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\MStrDup.h">
+      <Filter>Common Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ConEmu\UpdateConst.h">
+      <Filter>Common Sources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
